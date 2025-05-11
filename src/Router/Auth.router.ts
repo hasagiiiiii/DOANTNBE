@@ -23,7 +23,6 @@ AuthRouter.post('/register', async (req: Request, res: Response): Promise<any> =
 AuthRouter.post('/login', async (req: Request, res: Response): Promise<any> => {
     const { user_name, password } = req.body
     try {
-        console.log(' user_name, password', user_name, password)
         const user: UserLoginRes | null = await login(user_name, password)
         if (user == null) {
             return res.status(400).json({ message: "User not found" })
