@@ -73,6 +73,7 @@ const storage = multer.diskStorage({
 export const upload = multer({ storage, fileFilter });
 app.use("/api", AuthRouter, Category)
 app.use('/api', upload.single("thumbnail"), verifyTokenMiddleware, Quizzes, QuestionRouter, Courses, EnrollmentRouter, Answer)
+
 // app.use('/course', upload.single("video_url"), verifyTokenMiddleware, LessonRouter)
 app.use('/api/course', upload.fields([
     { name: "video_url", maxCount: 1 },

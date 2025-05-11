@@ -7,9 +7,6 @@ export const Courses = Router();
 
 Courses.get('/course', async (req: AuthRequest, res: Response): Promise<any> => {
     try {
-        if (!req.user) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
         const course = await SelectCourses()
         return res.status(200).json({ message: 'Thành công', data: course, result: 0 })
     } catch (e) {
