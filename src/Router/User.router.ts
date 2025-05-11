@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import { AuthRequest } from "../MiddleWare/auth.middleware";
-import { CountAccount, getUserByID, getUserbyTeacher, getUserByUsername, SelectAcount } from "../Controller/Auth.controller";
+import { CountAccount, getUserByID, getUserbyTeacher, getUserByUsername, SelectAcount, updateUser } from "../Controller/Auth.controller";
 import { Result, Role } from "../Model/IBase";
+import bcrypt from 'bcrypt'
 export const UserRouter = express.Router();
-
 UserRouter.get('/profile', async (req: AuthRequest, res: Response) => {
     const user = req.user
     try {
@@ -70,16 +70,19 @@ UserRouter.post('/getTeacher', async (req: AuthRequest, res: Response) => {
 UserRouter.post('/updateUser', async (req: AuthRequest, res: Response) => {
     const user = req.user
     console.log(req.user)
-    try {
-        if (user?.role == 'admin') {
-            const user = await getUserByID(req.user!.id)
-            console.log(user)
-            console.log(req.file)
-            //    if(req.file)
-        } else {
+    const { id, user_name, full_name, password, role } = req.body
+    if (user?.role == 'admin') {
+        const user = await getUserByID(req.user!.id)
+        try {
+            const hashpassword = await bcrypt.hash(password, 10);
+            const userUpdate = await updateUser({ id: id, user_name: user_name, full_name: full_name, role: role, avatar: req.file ? req.file.filename : user.avatar, password: hashpassword ? hashpassword : user.password })
+            res.status(200).json({ message: 'Thành Công', result: Result.Succes, data: userUpdate })
+
+        } catch (error) {
             res.status(401).json({ message: 'Thành Công', result: Result.Auth, data: [] })
+
         }
-    } catch (e) {
-        res.status(500).json({ message: 'Thành Công', result: Result.Faile, data: e })
+    } else {
+        res.status(401).json({ message: 'Thành Công', result: Result.Auth, data: [] })
     }
 })

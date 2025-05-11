@@ -24,6 +24,7 @@ export const login = async (username: string, password: string): Promise<UserLog
     const query = `Select id,user_name,password,full_name,role FROM users WHERE user_name = $1`;
     try {
         const res = await runQuery(query, [username]);
+        console.log(res?.rows[0])
         if (res?.rows.length === 0) {
             return null
         }
@@ -90,7 +91,7 @@ export const SelectAcount = async (limit: number, offset: number, role: string =
 export const updateUser = async (user: UpdateUserModel) => {
     console.log('course', user);
     const query = `
-   UPDATE courses SET user_name = $1,full_name =$2,avatar=$3,password=$4,role=$5 Where id = $6 RETURNING *;
+   UPDATE users SET user_name = $1,full_name = $2,avatar = $3,password = $4,role = $5 Where id = $6 RETURNING *;
   `;
     const res = await runQuery(query, [
         user.user_name,

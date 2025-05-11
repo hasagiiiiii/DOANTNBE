@@ -24,8 +24,7 @@ export interface UpdateUserModel {
     user_name: string;
     full_name: string;
     password: string;
-    sex: number;
     avatar: string;
     role: string;
-    create_at: Date;
+    create_at?: Date;
 }
