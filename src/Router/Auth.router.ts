@@ -13,8 +13,7 @@ AuthRouter.post('/register', async (req: Request, res: Response): Promise<any> =
             return res.status(400).json({ message: "User already exists" })
         }
         const user = await register({ user_name, password, full_name })
-        console.log(user);
-        res.status(200).json({ result: 0, message: 'thành công ' })
+        res.status(200).json({ result: 0, message: 'thành công ', data: user })
     } catch (error) {
         res.status(500).json({ message: 'that bai  ' })
     }
@@ -23,11 +22,16 @@ AuthRouter.post('/register', async (req: Request, res: Response): Promise<any> =
 AuthRouter.post('/login', async (req: Request, res: Response): Promise<any> => {
     const { user_name, password } = req.body
     try {
-        const user: UserLoginRes | null = await login(user_name, password)
-        if (user == null) {
-            return res.status(400).json({ message: "User not found" })
-        }
-        if (user != null) {
+        const user: UserLoginRes | number = await login(user_name, password)
+        if (typeof user == "number") {
+            if (user === -2) {
+
+                return res.status(400).json({ message: "Tài khoản không tồn tại", result: -3 })
+            } else {
+                return res.status(400).json({ message: "Tài khoản mật khẩu sai", result: -4 })
+
+            }
+        } else {
             const token = jwt.sign(
                 {
                     id: user.id,

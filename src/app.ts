@@ -17,11 +17,12 @@ import { Quizzes } from "./Router/Quizzes.router";
 import { QuestionRouter } from "./Router/Question.router";
 import { EnrollmentRouter } from "./Router/Enrollments.router";
 import { Answer } from "./Router/Answer.router";
+import { CoursesGuest } from "./GuestController/Course..guest.controler";
 const app = express()
 const server = http.createServer(app)
 const port = 3001
 const corsOptions = {
-    origin: ["http://localhost:3000"], // frontend
+    origin: ["http://localhost:3000", 'http://trendyt'], // frontend
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // cookie, HTTP Authentication
     optionsSuccessStatus: 204,
@@ -72,10 +73,14 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage, fileFilter });
 app.use("/api", AuthRouter, Category)
-app.use('/api', upload.single("thumbnail"), verifyTokenMiddleware, Quizzes, QuestionRouter, Courses, EnrollmentRouter, Answer)
-
+app.use('/quizzes', verifyTokenMiddleware, Quizzes)
+app.use('/question', verifyTokenMiddleware, QuestionRouter)
+app.use('/courses', upload.single("thumbnail"), verifyTokenMiddleware, Courses)
+app.use('/enrollment', verifyTokenMiddleware, EnrollmentRouter)
+app.use('/answer', verifyTokenMiddleware, Answer)
+app.use('/guest', CoursesGuest)
 // app.use('/course', upload.single("video_url"), verifyTokenMiddleware, LessonRouter)
-app.use('/api/course', upload.fields([
+app.use('/lesson', upload.fields([
     { name: "video_url", maxCount: 1 },
     { name: "banner", maxCount: 1 }
 ]), verifyTokenMiddleware, LessonRouter);
@@ -95,7 +100,6 @@ app.use("/uploads", cors(corsOptions), express.static(UPLOADS_DIR));
 
 
 io.on("connection", (socket) => { // connect
-    console.log('user connect');
     // socket.on("createRoom", (idUser) => {
 
     //     socket.emit("createRoomResponse", Room);
@@ -104,10 +108,8 @@ io.on("connection", (socket) => { // connect
     // });
 
     socket.on("joinCourse", (idUser, courseId) => {
-        console.log('idJoin', idUser);
         socket.join(courseId);
         socket.to(courseId).emit('userconnected', idUser);
-        console.log(`User ${idUser} joined room ${courseId}`);
     })
     socket.on("toggleCamera", (idUser, courseId, isActiveCamera) => {
         socket.broadcast.to(courseId).emit("toggleCameraInRoom", idUser, isActiveCamera)
@@ -118,7 +120,6 @@ io.on("connection", (socket) => { // connect
     })
     socket.on("shareScreen", (idUser, courseId) => {
         socket.broadcast.to(courseId).emit("shareScreen", idUser)
-        console.log("User Share Screen", idUser)
     })
     // socket.on("shareScreen",(idUser,roomId,screenStream)=>{
     //     socket.broadcast.to(roomId).emit("shareScreenInRoom",idUser,screenStream)
@@ -131,8 +132,10 @@ io.on("connection", (socket) => { // connect
     });
 });
 
-
-server.listen(port, () => {
+app.get('/', (req, res) => {
+    res.send('Hello from trendyt!');
+});
+server.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
 });
 

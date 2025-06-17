@@ -23,7 +23,6 @@ export const runQuery = async (query: string, params: any) => {
 export const checkConnection = async () => {
     try {
         const client = await pool.connect();
-        console.log("Connected to the database successfully.");
         client.release();
     } catch (err: any) {
         console.error("Error connecting to the database", err.stack);

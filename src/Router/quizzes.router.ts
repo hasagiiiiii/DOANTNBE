@@ -15,7 +15,6 @@ Quizzes.get('/quizzesById', async (req: AuthRequest, res: Response): Promise<any
 })
 Quizzes.post('/quizzes', async (req: AuthRequest, res: Response): Promise<any> => {
     const { idCourse } = req.body
-    console.log(idCourse);
     try {
         const data = await getQuizzesAll(idCourse)
         return res.status(200).json({ message: 'Thành công', result: 0, data: data })
@@ -28,7 +27,6 @@ Quizzes.post('/quizzesIn', async (req: AuthRequest, res: Response) => {
     const { data } = req.body
     try {
         const value = await InsertQuizzes({ idCourse: data?.idCourse, title: data.title, description: data.description })
-        console.log(data);
         res.status(200).json({ message: 'Thành công', result: 0, data: value })
     } catch (error) {
         res.status(400).json({ message: 'Thất bại', result: 0, data: [] })
@@ -38,10 +36,8 @@ Quizzes.post('/quizzesIn', async (req: AuthRequest, res: Response) => {
 
 Quizzes.post('/updateQuize', async (req: AuthRequest, res: Response) => {
     const { data } = req.body
-    console.log(req.body);
     try {
         const value = await UpdateQuizzes(data.title, data.description, data?.id)
-        console.log(value);
         res.status(200).json({ message: 'Thành công', result: 0, data: value })
     } catch (error) {
         res.status(400).json({ message: 'Thất bại', result: 0, data: [] })

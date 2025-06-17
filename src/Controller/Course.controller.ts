@@ -17,7 +17,6 @@ export const InsertCourse = async (courses: InsertCourses) => {
 }
 
 export const UpdateCourse = async (courses: UDCourse) => {
-    console.log('course', courses);
     const query = `
    UPDATE courses SET title = $1,description =$2,price=$3,thumbnail=$4,category=$5 Where id = $6 RETURNING *;
   `;
@@ -51,7 +50,14 @@ export const SelectCourseByID = async (idCourse: number) => {
    Select courses.id,courses.title,courses.description,courses.category,courses.created_at,courses.thumbnail,courses.price,users.user_name,users.avatar from courses JOIN users on courses.teacher_id = users.id Where courses.id = $1  ORDER BY courses.id ASC
     `;
     const res = await runQuery(query, [idCourse]);
-    return res?.rows;
+    return res!.rows;
+}
+
+export const SelectCourseByID2 = async (idCourse: number) => {
+    const query = ` Select * from courses where id = $1
+     `;
+    const res = await runQuery(query, [idCourse]);
+    return res?.rows[0];
 }
 export const DeleteCourse = async (idCourse: number) => {
     const query = `

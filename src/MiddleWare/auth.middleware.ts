@@ -20,6 +20,17 @@ export const verifyTokenMiddleware = async (
         "TrendyT",
         (err: jwt.VerifyErrors | null, decoded: any) => {
             if (err) {
+                res.clearCookie('accessToken', {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "strict",
+                })
+                res.clearCookie("refeshToken", {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "strict",
+                });
+                res.clearCookie("user")
                 return res.status(200).json({ result: -2, data: [], message: "RefreshToken không hợp lệ" });
             }
 

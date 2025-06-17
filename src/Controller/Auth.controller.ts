@@ -8,8 +8,8 @@ export const register = async (user: UserRegister): Promise<User> => {
     const { user_name, password, full_name } = user;
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = `
-      INSERT INTO users (user_name, password,full_name, role)
-      VALUES ($1, $2, $3, $4) RETURNING *;
+      INSERT INTO users (user_name, password,full_name, role,avatar)
+      VALUES ($1, $2, $3, $4,'default.png') RETURNING *;
     `;
     const res = await runQuery(query, [
         user_name,
@@ -20,19 +20,18 @@ export const register = async (user: UserRegister): Promise<User> => {
     return res?.rows[0];
 };
 
-export const login = async (username: string, password: string): Promise<UserLoginRes | null> => {
+export const login = async (username: string, password: string): Promise<UserLoginRes | number> => {
     const query = `Select id,user_name,password,full_name,role FROM users WHERE user_name = $1`;
     try {
         const res = await runQuery(query, [username]);
-        console.log(res?.rows[0])
         if (res?.rows.length === 0) {
-            return null
+            return -2
         }
         const user = res?.rows[0];
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return null;
+            return 1;
         }
 
         return {
@@ -44,7 +43,7 @@ export const login = async (username: string, password: string): Promise<UserLog
 
     } catch (error) {
         console.log(error)
-        return null
+        return -3
     }
 }
 
@@ -66,7 +65,15 @@ export const getUserByID = async (id: number) => {
     return res?.rows[0];
 
 };
+export const getProfile = async (id: number) => {
+    const query = `
+    SELECT id, full_name, user_name, role, avatar, created_at FROM users WHERE id = $1;
+  `;
+    const res = await runQuery(query, [id]);
 
+    return res?.rows[0];
+
+};
 export const getUserbyTeacher = async () => {
     const query = `
     SELECT * FROM users WHERE role = 'teacher';
@@ -81,7 +88,6 @@ export const CountAccount = async (role: string) => {
     return res?.rowCount!
 }
 export const SelectAcount = async (limit: number, offset: number, role: string = Role.Student) => {
-    console.log(limit, offset)
     const query = `SELECT id, full_name, user_name, role, avatar, created_at FROM users  where role = $3 ORDER BY id ASC LIMIT $1 OFFSET $2`
     const res = await runQuery(query, [limit, offset, role])
     return res?.rows
@@ -89,7 +95,6 @@ export const SelectAcount = async (limit: number, offset: number, role: string =
 
 
 export const updateUser = async (user: UpdateUserModel) => {
-    console.log('course', user);
     const query = `
    UPDATE users SET user_name = $1,full_name = $2,avatar = $3,password = $4,role = $5 Where id = $6 RETURNING *;
   `;
@@ -102,4 +107,18 @@ export const updateUser = async (user: UpdateUserModel) => {
         user.id
     ])
     return res?.rows[0]
+}
+
+export const deleteUser = async (idUser: number): Promise<boolean> => {
+    const query = `
+   DELETE FROM users
+	WHERE id = $1 RETURNING *;
+  `;
+    const res = await runQuery(query, [
+        idUser
+    ])
+    if (res?.rows[0]) {
+        return true
+    }
+    return false
 }

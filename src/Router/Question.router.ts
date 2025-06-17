@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import { AuthRequest } from "../MiddleWare/auth.middleware";
-import { GetQuestion, InsertQuestion } from "../Controller/Question.controller";
-import { getAnserByID, insertAnswer } from "../Controller/Answer.controller";
+import { DELETEQuestion, GetQuestion, InsertQuestion, UpdateQuestion } from "../Controller/Question.controller";
+import { DELETEANSWER, getAnserByID, insertAnswer, updateAnswer } from "../Controller/Answer.controller";
+import { Result } from "../Model/IBase";
 export const QuestionRouter = express.Router();
 
 QuestionRouter.post('/questionByID', async (req: AuthRequest, res: Response): Promise<any> => {
@@ -24,6 +25,40 @@ QuestionRouter.post('/questionByID', async (req: AuthRequest, res: Response): Pr
         console.error(error);
         res.status(500).json({ error: "Internal server error" });
     }
+})
+
+QuestionRouter.post('/update', async (req: AuthRequest, res: Response) => {
+    const { idQuestion, text, answer } = req.body.datares;
+    console.log(idQuestion, text, answer);
+    try {
+        const questionUpdate = await UpdateQuestion(idQuestion, text)
+        for (const item of answer) {
+            await updateAnswer({ id: item.id, answer_text: item.answer_text, is_correct: item.is_correct })
+        }
+        // const question
+        res.status(200).json({ error: "Thanh cong", result: Result.Succes, data: [] });
+
+    } catch (e) {
+        res.status(500).json({ error: "Internal server error", result: Result.Faile, data: [] });
+    }
+
+})
+
+QuestionRouter.post('/delete', async (req: AuthRequest, res: Response) => {
+    const { idQuestion, text, answer } = req.body;
+    console.log(idQuestion, text, answer);
+    try {
+        const questionUpdate = await DELETEQuestion(idQuestion)
+        for (const item of answer) {
+            await DELETEANSWER(item.id)
+        }
+        // const question
+        res.status(200).json({ error: "Thanh cong", result: Result.Succes, data: [] });
+
+    } catch (e) {
+        res.status(500).json({ error: "Internal server error", result: Result.Faile, data: [] });
+    }
+
 })
 QuestionRouter.post('/getQuestion', async (req: AuthRequest, res: Response) => {
     const { id_quizze } = req.body
